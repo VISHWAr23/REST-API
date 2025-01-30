@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { Prisma } from '@prisma/client';
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { MyLoggerService } from 'src/my-logger/my-logger.service';
+import { JwtAuthGuard } from 'src/auth/jwt.gurds';
 
 @Controller('employees')
 export class EmployeesController {
@@ -17,6 +18,7 @@ export class EmployeesController {
   }
 
   @SkipThrottle( {default: false})
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll(@Query('role') role?: 'Employee' | 'Owner') {
     this.logger.log('Finding all employees', EmployeesController.name);
