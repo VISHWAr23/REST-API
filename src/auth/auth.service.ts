@@ -1,25 +1,27 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { AuthDto } from './dto/auth.dto';
-import { Prisma } from '@prisma/client';
-import { DatabaseService } from 'src/database/database.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { jwtSecret } from './utils/constants'
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { Employee } from '../database/schemas/employee.schema';
+import { RegisterDto } from './dto/register.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
 
-    constructor(private daatabaseService : DatabaseService, private jwtService : JwtService) {}
+    constructor(
+        @InjectModel(Employee.name) private employeeModel: Model<Employee>,
+        private jwtService: JwtService,
+        private configService: ConfigService
+    ) {}
 
     async login(dto: AuthDto, req : Request, res : Response) {
         const { email, password } = dto;
 
-        const user = await this.daatabaseService.employee.findUnique({
-            where: {
-                email
-            }
-        });
+        const user = await this.employeeModel.findOne({ email: dto.email });
         if (!user) {
             throw new BadRequestException("User not found");
         }
@@ -44,43 +46,48 @@ export class AuthService {
         return res.send({message: 'logged out successfully'});
     }
     
-    async register(Dto : Prisma.EmployeeCreateInput) {
-        const { email } = Dto;
-
-        const user = await this.daatabaseService.employee.findUnique({
-            where: {
-                email
-            }
-        })
-        if (user) {
-            throw new BadRequestException("User already registered");
+    async register(dto: RegisterDto) {
+        if (!dto.password) {
+          throw new BadRequestException('Password is required');
         }
+    
+        const existingUser = await this.employeeModel.findOne({ email: dto.email });
+        if (existingUser) {
+          throw new BadRequestException('Email already registered');
+        }
+    
+        const hashedPassword = await this.hashPassword(dto.password);
+    
+        const newEmployee = new this.employeeModel({
+          name: dto.name,
+          email: dto.email,
+          role: dto.role,
+          hashed_password: hashedPassword
+        });
+    
+        return await newEmployee.save();
+      }
 
-        const hashedPassword = await this.hashPassword(Dto.hashed_password);
-
-        await this.daatabaseService.employee.create({
-            data: {
-                name: Dto.name,
-                email: Dto.email,
-                role: Dto.role,
-                hashed_password: hashedPassword
-            }
-        })
-    }
-
-    async hashPassword(password:string){
-        const saltOrRound = 10;
-        const hashedPassword = await bcrypt.hash(password, saltOrRound);
-        return hashedPassword;
-    }
+    async hashPassword(password: string): Promise<string> {
+        if (!password) {
+          throw new BadRequestException('Password is required');
+        }
+        const salt = await bcrypt.genSalt(10);
+        return bcrypt.hash(password, salt);
+      }
 
     async comparePassword(args : {password:string,hash:string}){
         return await bcrypt.compare(args.password, args.hash);
     }
 
-    async signToken(args : {id:number,email:string}) {
+    async signToken(args : {id:string,email:string}) {
         const payload = args;
+        const secret = this.configService.get<string>('JWT_SECRET');
+        
+        if (!secret) {
+            throw new Error('JWT_SECRET is not defined');
+        }
 
-        return this.jwtService.signAsync(payload, {secret:jwtSecret});
+        return this.jwtService.signAsync(payload, { secret });
     }
 }

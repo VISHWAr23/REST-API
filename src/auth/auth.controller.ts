@@ -1,23 +1,27 @@
-import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
+import { Controller, Post, Body, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Prisma } from '@prisma/client';
 import { AuthDto } from './dto/auth.dto';
+import { RegisterDto } from './dto/register.dto';
+import { Request, Response } from 'express';
+import { RestThrottlerGuard } from '../common/guards/rest-throttler.guard';
 
 @Controller('auth')
+@UseGuards(RestThrottlerGuard)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  login(@Body() dto : AuthDto, @Req() req, @Res() res) {
+  login(@Body() dto: AuthDto, @Req() req: Request, @Res() res: Response) {
     return this.authService.login(dto, req, res);
   }
 
   @Get('logout')
-  logout(@Req() req, @Res() res) {
+  logout(@Req() req: Request, @Res() res: Response) {
     return this.authService.logout(req, res);
   }
+
   @Post('register')
-  register(@Body() body: Prisma.EmployeeCreateInput) {
-    return this.authService.register(body);
-  } 
+  register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto);
+  }
 }

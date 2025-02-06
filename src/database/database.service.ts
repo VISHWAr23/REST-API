@@ -1,9 +1,26 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { Connection } from 'mongoose';
+import { InjectConnection } from '@nestjs/mongoose';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class DatabaseService extends PrismaClient implements OnModuleInit {
+export class DatabaseService implements OnModuleInit {
+    constructor(
+        @InjectConnection() private readonly connection: Connection,
+        private ConfigService: ConfigService
+    ) {}
+
     async onModuleInit() {
-        await this.$connect();
-    }
+        try {
+          if (this.connection.db) {
+            await this.connection.db.admin().ping();
+            console.log('Connected to MongoDB Atlas');
+          } else {
+            console.error('MongoDB Atlas connection failed: connection.db is undefined');
+          }
+          console.log('Connected to MongoDB Atlas');
+        } catch (error) {
+          console.error('MongoDB Atlas connection failed:', error);
+        }
+      }
 }

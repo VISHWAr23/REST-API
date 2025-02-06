@@ -9,7 +9,7 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
   app.setGlobalPrefix('api');
   app.enableCors();
-  app.use(cookieParser())
+  app.use(cookieParser());
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
