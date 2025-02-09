@@ -10,7 +10,6 @@ import { SalaryModule } from './salary/salary.module';
 import { DailyWorkModule } from './daily-work/daily-work.module';
 import { GraphqlModule } from './graphql/graphql.module';
 import { APP_FILTER } from '@nestjs/core';
-import { GraphQLExceptionFilter } from './graphql-exception.filter';
 import { AllExceptionsFilter } from './all-exceptions.filter';
 import { ConfigModule } from '@nestjs/config';
 
@@ -22,8 +21,8 @@ import { ConfigModule } from '@nestjs/config';
       envFilePath: '.env'
     }),
     ThrottlerModule.forRoot([{
-      ttl: 60000, // 1 minute
-      limit: 10, // 10 requests per ttl
+      ttl: 600,
+      limit: 10,
     }]),
     MyLoggerModule,
     AuthModule,

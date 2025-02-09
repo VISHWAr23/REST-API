@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ObjectType, Field, ID, Float } from '@nestjs/graphql';
 import { Document, Types } from 'mongoose';
 
-@ObjectType()
+@ObjectType('EmployeeDailyWork')
 @Schema({ timestamps: true })
 export class DailyWork extends Document {
   @Field(() => ID)

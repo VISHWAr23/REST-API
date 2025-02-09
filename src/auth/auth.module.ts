@@ -1,14 +1,20 @@
 import { Module } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
+import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
+import { AuthService } from './auth.service';
+import { AuthResolver } from './auth.resolver';
 import { Employee, EmployeeSchema } from '../database/schemas/employee.schema';
+import { DailyWork, DailyWorkSchema } from '../database/schemas/daily-work.schema';
+import { Salary, SalarySchema } from '../database/schemas/salary.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Employee.name, schema: EmployeeSchema }]),
+    MongooseModule.forFeature([
+      { name: Employee.name, schema: EmployeeSchema },
+      { name: DailyWork.name, schema: DailyWorkSchema },
+      { name: Salary.name, schema: SalarySchema }
+    ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -17,8 +23,9 @@ import { Employee, EmployeeSchema } from '../database/schemas/employee.schema';
       }),
       inject: [ConfigService],
     }),
+    ConfigModule
   ],
-  controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, AuthResolver],
+  exports: [AuthService]
 })
 export class AuthModule {}

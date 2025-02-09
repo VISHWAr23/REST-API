@@ -1,27 +1,47 @@
-import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
+  import { Field, ObjectType, ID, registerEnumType } from '@nestjs/graphql';
+  import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
+  import { Document, Schema as MongooseSchema } from 'mongoose';
+  import { Salary } from './salary.schema';
+  import { DailyWork } from './daily-work.schema';
 
-export enum Role {
-  Owner = 'Owner',
-  Employee = 'Employee'
-}
+  export enum Role {
+    Owner = 'Owner',
+    Employee = 'Employee'
+  }
 
-@Schema({ timestamps: true })
-export class Employee extends Document {
-  @Prop({ required: true })
-  name: string;
+  registerEnumType(Role, {
+    name: 'Role',
+    description: 'User roles',
+  });
 
-  @Prop({ required: true, unique: true })
-  email: string;
+  @ObjectType()
+  @Schema({ timestamps: true })
+  export class Employee extends Document {
+    @Field(() => ID)
+    _id: string;
 
-  @Prop({ required: true, enum: Role })
-  role: Role;
+    @Field()
+    @Prop({ required: true })
+    name: string;
 
-  @Prop({ required: true })
-  hashed_password: string;
+    @Field()
+    @Prop({ required: true, unique: true })
+    email: string;
 
-  @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Salary' }] })
-  salaries: MongooseSchema.Types.ObjectId[];
-}
+    @Field(() => Role)
+    @Prop({ required: true, enum: Role })
+    role: Role;
 
-export const EmployeeSchema = SchemaFactory.createForClass(Employee);
+    @Prop({ required: true })
+    hashed_password: string;
+
+    @Field(() => [Salary], { nullable: true })
+    @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Salary' }] })
+    salaries: MongooseSchema.Types.ObjectId[] | Salary[];
+
+    @Field(() => [DailyWork], { nullable: true })
+    @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'DailyWork' }] })
+    dailyWorks: MongooseSchema.Types.ObjectId[] | DailyWork[];
+  }
+
+  export const EmployeeSchema = SchemaFactory.createForClass(Employee);

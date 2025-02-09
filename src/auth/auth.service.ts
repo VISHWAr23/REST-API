@@ -1,13 +1,15 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { AuthDto } from './dto/auth.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Employee } from '../database/schemas/employee.schema';
 import { RegisterDto } from './dto/register.dto';
 import { ConfigService } from '@nestjs/config';
+import { DailyWork } from 'src/database/schemas/daily-work.schema';
+import { Salary } from 'src/database/schemas/salary.schema';
 
 @Injectable()
 export class AuthService {
@@ -15,7 +17,9 @@ export class AuthService {
     constructor(
         @InjectModel(Employee.name) private employeeModel: Model<Employee>,
         private jwtService: JwtService,
-        private configService: ConfigService
+        private configService: ConfigService,
+        @InjectModel(DailyWork.name) private dailyWorkModel: Model<DailyWork>,
+        @InjectModel(Salary.name) private salaryModel: Model<Salary>,
     ) {}
 
     async login(dto: AuthDto, req : Request, res : Response) {
@@ -31,20 +35,18 @@ export class AuthService {
             throw new BadRequestException("Wrong Credentials");
         }
 
-        const token = await this.signToken({id : user.id, email: user.email});
+        const token = await this.signToken({id : user.id, role: user.role});
         if(!token) {
             new ForbiddenException();
         }
 
-        res.cookie('token', token);
-
-        return res.send({message: 'Login successful'});
+        return res.send({message: 'Login successful',token: token});
     }
     
     async logout(req: Request, res: Response) {
         res.clearCookie('token');
-        return res.send({message: 'logged out successfully'});
-    }
+        return res.send({message: 'Logged out successfully'});
+  }
     
     async register(dto: RegisterDto) {
         if (!dto.password) {
@@ -80,7 +82,7 @@ export class AuthService {
         return await bcrypt.compare(args.password, args.hash);
     }
 
-    async signToken(args : {id:string,email:string}) {
+    async signToken(args : {id:string,role:string}) {
         const payload = args;
         const secret = this.configService.get<string>('JWT_SECRET');
         
@@ -89,5 +91,80 @@ export class AuthService {
         }
 
         return this.jwtService.signAsync(payload, { secret });
+    }
+
+
+  
+    async getEmployee(id: string) {
+      const employee = await this.employeeModel.aggregate([
+        {
+          $match: { _id: new Types.ObjectId(id) }
+        },
+        {
+          $lookup: {
+            from: 'dailyworks',
+            localField: '_id',
+            foreignField: 'employeeId',
+            as: 'dailyWorks'
+          }
+        },
+        {
+          $lookup: {
+            from: 'salaries',
+            localField: '_id',
+            foreignField: 'employeeId',
+            as: 'salaries'
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            email: 1,
+            role: 1,
+            dailyWorks: 1,
+            salaries: 1
+          }
+        }
+      ]).exec();
+  
+      return employee[0];
+    }
+  
+    async getAllEmployees() {
+      const employees = await this.employeeModel.aggregate([
+        {
+          $lookup: {
+            from: 'dailyworks',
+            localField: '_id',
+            foreignField: 'employeeId',
+            as: 'dailyWorks'
+          }
+        },
+        {
+          $lookup: {
+            from: 'salaries',
+            localField: '_id',
+            foreignField: 'employeeId',
+            as: 'salaries'
+          }
+        },
+        {
+          $project: {
+            _id: 1,
+            name: 1,
+            email: 1,
+            role: 1,
+            dailyWorks: 1,
+            salaries: 1,
+            totalEarnings: { $sum: '$salaries.totalAmount' }
+          }
+        },
+        {
+          $sort: { name: 1 }
+        }
+      ]).exec();
+  
+      return employees;
     }
 }

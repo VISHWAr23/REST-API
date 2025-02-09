@@ -4,9 +4,10 @@ import { AuthDto } from './dto/auth.dto';
 import { RegisterDto } from './dto/register.dto';
 import { Request, Response } from 'express';
 import { RestThrottlerGuard } from '../common/guards/rest-throttler.guard';
+import { JwtAuthGuard } from './jwt.gurds';
 
 @Controller('auth')
-@UseGuards(RestThrottlerGuard)
+@UseGuards(JwtAuthGuard)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

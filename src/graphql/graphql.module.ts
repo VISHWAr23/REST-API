@@ -10,7 +10,7 @@ import { MongooseModule } from '@nestjs/mongoose';
       autoSchemaFile: true,
       introspection: true,
       context: ({ req, res }) => ({ req, res }),
-      playground: true
+      playground: true,
     }),
     MongooseModule.forRoot("mongodb+srv://vishwarajkumar05:E8ccnggsfjI83xAE@sample1.gwluq.mongodb.net/?retryWrites=true&w=majority&appName=sample1"),
     

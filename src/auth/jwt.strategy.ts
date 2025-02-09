@@ -18,13 +18,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   private static extractJWT(req : Request): string | null{
-    if(req.cookies && 'token' in req.cookies){
-        return req.cookies.token;
+    if(req.headers && 'authorization' in req.headers){
+        const authHeader = req.headers.authorization;
+        return authHeader ? authHeader.replace('Bearer ', '') : null;
     }
     return null;
   }
 
-  async validate(payload : { id : string, email : string}){
+  async validate(payload : { id : string, role : string}){
       return payload;
   }
 }

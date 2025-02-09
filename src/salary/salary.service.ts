@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Salary } from '../database/schemas/salary.schema';
 
 @Injectable()
@@ -10,11 +10,92 @@ export class SalaryService {
   ) {}
 
   async findAll() {
-    return await this.salaryModel.find().populate('employeeId');
+    return await this.salaryModel.aggregate([
+      {
+        $group: {
+          _id: '$employeeId',
+          totalSalary: { $sum: '$totalAmount' },
+          salaries: {
+            $push: {
+              _id: { $toString: '$_id' },  // Convert ObjectId to string
+              employeeId: { $toString: '$employeeId' },  // Convert ObjectId to string
+              month: '$month',
+              totalAmount: '$totalAmount',
+              createdAt: '$createdAt',
+              updatedAt: '$updatedAt'
+            }
+          }
+        }
+      },
+      {
+        $lookup: {
+          from: 'employees',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'employeeDetails'
+        }
+      },
+      {
+        $unwind: '$employeeDetails'
+      },
+      {
+        $project: {
+          _id: { $toString: '$_id' },  // Convert ObjectId to string
+          totalSalary: 1,
+          salaries: 1,
+          employeeDetails: {
+            _id: { $toString: '$employeeDetails._id' },  // Convert ObjectId to string
+            // Add other employee fields you need
+          }
+        }
+      }
+    ]);
   }
 
   async findByEmployeeId(employeeId: string) {
-    return await this.salaryModel.find({ employeeId }).populate('employeeId');
+    return await this.salaryModel.aggregate([
+      {
+        $match: { employeeId: new Types.ObjectId(employeeId) }  // Convert string to ObjectId
+      },
+      {
+        $group: {
+          _id: '$employeeId',
+          totalSalary: { $sum: '$totalAmount' },
+          salaries: {
+            $push: {
+              _id: { $toString: '$_id' },  // Convert ObjectId to string
+              employeeId: { $toString: '$employeeId' },  // Convert ObjectId to string
+              month: '$month',
+              totalAmount: '$totalAmount',
+              createdAt: '$createdAt',
+              updatedAt: '$updatedAt'
+            }
+          }
+        }
+      },
+      {
+        $lookup: {
+          from: 'employees',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'employeeDetails'
+        }
+      },
+      {
+        $unwind: '$employeeDetails'
+      },
+      {
+        $project: {
+          _id: { $toString: '$_id' },  // Convert ObjectId to string
+          totalSalary: 1,
+          salaries: 1,
+          employeeDetails: {
+            _id: { $toString: '$employeeDetails._id' },  // Convert ObjectId to string
+            // Add other employee fields you need
+          }
+        }
+      }
+    ]);
   }
 
   async updateOrCreateMonthlySalary(employeeId: string, amount: number) {

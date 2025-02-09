@@ -39,12 +39,46 @@ export class DailyWorkService {
   }
 
   async findAll() {
-    return this.dailyWorkModel.find().exec();
+    return this.dailyWorkModel.aggregate([
+      {
+        $group: {
+          _id: '$employeeId',
+          dailyWorks: { $push: '$$ROOT' }
+        }
+      }
+    ]).exec();
   }
 
   async findByEmployeeId(employeeId: string) {
-    return this.dailyWorkModel.find({ employeeId })
-      .sort({ date: -1 })
-      .exec();
+    return this.dailyWorkModel.aggregate([
+      {
+        $match: { employeeId }
+      },
+      {
+        $group: {
+          _id: '$employeeId',
+          dailyWorks: { 
+            $push: {
+              $mergeObjects: [
+                '$$ROOT',
+                { date: { $dateToString: { format: '%Y-%m-%d', date: '$date' } } }
+              ]
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          employeeId: '$_id',
+          dailyWorks: {
+            $sortArray: {
+              input: '$dailyWorks',
+              sortBy: { date: -1 }
+            }
+          }
+        }
+      }
+    ]).exec();
   }
 }
