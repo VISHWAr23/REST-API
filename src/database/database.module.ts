@@ -4,6 +4,7 @@ import { Employee, EmployeeSchema } from './schemas/employee.schema';
 import { Salary, SalarySchema } from './schemas/salary.schema';
 import { DailyWork, DailyWorkSchema } from './schemas/daily-work.schema';
 import { DatabaseService } from './database.service';
+import { Trade, TradeSchema } from './schemas/trade.schema';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
@@ -20,6 +21,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       { name: Employee.name, schema: EmployeeSchema },
       { name: Salary.name, schema: SalarySchema },
       { name: DailyWork.name, schema: DailyWorkSchema },
+      { name: Trade.name, schema: TradeSchema }
     ]),
   ],
   providers: [DatabaseService],
