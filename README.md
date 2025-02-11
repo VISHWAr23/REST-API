@@ -152,5 +152,5 @@ This project is licensed under the MIT License.
 ## Contact
 For any queries, feel free to reach out:
 - GitHub: [VISHWAr23](https://github.com/VISHWAr23)
-- Email: your-email@example.com
+- Email: vishwarajkumar@gmail.com
 
