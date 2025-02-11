@@ -1,99 +1,156 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# NestJS Employee Management System
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Overview
+This is a comprehensive NestJS application designed to manage employee work, trades, and salary information using both REST and GraphQL APIs. The project uses MongoDB as its database and follows a modular architecture for scalability and maintainability.
 
-## Description
+## Core Modules
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### 1. Auth Module
+Handles user authentication and authorization.
+#### Features:
+- JWT-based authentication
+- Login/Logout functionality
+- User registration
+- Role-based access control (Owner/Employee roles)
 
-## Project setup
+### 2. Database Module
+Central database configuration using MongoDB.
+#### Manages schemas for:
+- Employee
+- Salary
+- DailyWork
+- Trade
 
-```bash
-$ npm install
+### 3. Trade Module
+Handles import/export trade operations.
+#### Features:
+- Trade creation and management
+- Status tracking (PENDING/COMPLETED/CANCELLED)
+- GraphQL endpoints for trade operations
+
+### 4. Salary Module
+Manages employee salary calculations and records.
+#### Features:
+- Monthly salary tracking
+- Automatic salary updates based on daily work
+- Salary history queries
+
+### 5. DailyWork Module
+Tracks employee daily work records.
+#### Features:
+- Daily work entry creation
+- Work quantity and rate tracking
+- Automatic salary calculations
+
+## Technical Features
+
+### API Support:
+- REST API with controllers
+- GraphQL API with resolvers
+- Rate limiting implementation
+
+### Security:
+- JWT authentication
+- Rate limiting guards (RestThrottlerGuard and GraphqlThrottlerGuard)
+- Exception handling (AllExceptionsFilter)
+
+### Logging:
+- Custom logger service (MyLoggerService)
+- File-based logging
+- Error tracking
+
+### Configuration:
+- Environment-based configuration using `.env`
+- TypeScript configuration
+- ESLint and Prettier setup for code quality
+
+## Installation & Setup
+
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/VISHWAr23/REST-API.git
+   ```
+
+2. Navigate to the project directory:
+   ```sh
+   cd REST-API
+   ```
+
+3. Install dependencies:
+   ```sh
+   npm install
+   ```
+
+4. Set up environment variables:
+   Create a `.env` file in the root directory and configure:
+   ```sh
+   MONGO_URI=your_mongodb_connection_string
+   JWT_SECRET=your_jwt_secret
+   PORT=your_preferred_port
+   ```
+
+5. Start the server:
+   ```sh
+   npm run start
+   ```
+
+6. The API will be available at:
+   ```sh
+   http://localhost:PORT
+   ```
+
+## API Endpoints
+
+### User Routes
+- **POST** `/auth/register` - Register a new user
+- **POST** `/auth/login` - Authenticate a user
+- **GET** `/users/:id` - Retrieve user details
+- **PUT** `/users/:id` - Update user details
+- **DELETE** `/users/:id` - Delete a user
+
+### Trade Routes
+- **POST** `/trade/create` - Create a new trade
+- **GET** `/trade/status/:id` - Get trade status
+- **PUT** `/trade/update/:id` - Update trade details
+
+### Salary Routes
+- **GET** `/salary/:employeeId` - Get salary details
+- **POST** `/salary/update` - Update salary details
+
+### Daily Work Routes
+- **POST** `/dailywork/add` - Add daily work entry
+- **GET** `/dailywork/:employeeId` - Get daily work records
+
+## Project Structure
+```
+REST-API/
+│── src/
+│   ├── auth/
+│   ├── database/
+│   ├── trade/
+│   ├── salary/
+│   ├── dailywork/
+│   ├── common/
+│── config/
+│── logs/
+│── .env
+│── package.json
+│── tsconfig.json
 ```
 
-## Compile and run the project
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Contributing
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature-branch`)
+3. Commit your changes (`git commit -m "Added new feature"`)
+4. Push to the branch (`git push origin feature-branch`)
+5. Open a Pull Request
 
 ## License
+This project is licensed under the MIT License.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## Contact
+For any queries, feel free to reach out:
+- GitHub: [VISHWAr23](https://github.com/VISHWAr23)
+- Email: vishwarajkumar@gmail.com
+
