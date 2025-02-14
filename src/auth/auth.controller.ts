@@ -2,12 +2,12 @@ import { Controller, Post, Body, Get, Req, Res, UseGuards } from '@nestjs/common
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto'; 
 import { Request, Response } from 'express';
-import { RestThrottlerGuard } from '../common/guards/rest-throttler.guard';
-import { JwtAuthGuard } from './jwt.gurds';
+import { console } from 'inspector';
 
 @Controller('auth')
-@UseGuards(JwtAuthGuard)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -22,7 +22,22 @@ export class AuthController {
   }
 
   @Post('register')
-  register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
+  async register(@Body() dto: RegisterDto) {
+    const user = await this.authService.register(dto);
+    await this.authService.sendWelcomeEmail(user.email);
+    return user;
+  }
+
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    const verificationCode = await this.authService.generateVerificationCode();
+    await this.authService.saveVerificationCode(dto.email, verificationCode);
+    await this.authService.sendVerificationEmail(dto.email, verificationCode);
+    return { message: 'Verification code sent to your email', code: verificationCode};
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto.email, dto.verificationCode, dto.newPassword);
   }
 }

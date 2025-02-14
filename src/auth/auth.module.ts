@@ -7,13 +7,17 @@ import { AuthResolver } from './auth.resolver';
 import { Employee, EmployeeSchema } from '../database/schemas/employee.schema';
 import { DailyWork, DailyWorkSchema } from '../database/schemas/daily-work.schema';
 import { Salary, SalarySchema } from '../database/schemas/salary.schema';
+import { AuthController } from './auth.controller';
+import { Verification, VerificationSchema } from 'src/database/schemas/verification.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Employee.name, schema: EmployeeSchema },
       { name: DailyWork.name, schema: DailyWorkSchema },
-      { name: Salary.name, schema: SalarySchema }
+      { name: Salary.name, schema: SalarySchema },
+      { name: Employee.name, schema: EmployeeSchema },
+      { name: Verification.name, schema: VerificationSchema }
     ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -26,6 +30,7 @@ import { Salary, SalarySchema } from '../database/schemas/salary.schema';
     ConfigModule
   ],
   providers: [AuthService, AuthResolver],
-  exports: [AuthService]
+  exports: [AuthService],
+  controllers:[AuthController],
 })
 export class AuthModule {}

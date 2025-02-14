@@ -12,6 +12,10 @@ import { APP_FILTER } from '@nestjs/core';
 import { AllExceptionsFilter } from './all-exceptions.filter';
 import { ConfigModule } from '@nestjs/config';
 import { TradeModule } from './trade/trade.module';
+import { AuthService } from './auth/auth.service';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -29,12 +33,36 @@ import { TradeModule } from './trade/trade.module';
     SalaryModule,
     DailyWorkModule,
     GraphqlModule,
-    TradeModule
+    TradeModule,
+    MailerModule.forRoot({
+      transport: {
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: {
+          user: '2215042@nec.edu.in',
+          pass: '&221504205&'
+        }
+      },
+      defaults: {
+        from: '"No Reply" <noreply@example.com>'
+      },
+      template: {
+        dir: join(__dirname, '..', 'src', 'templates'),
+        adapter: new HandlebarsAdapter(),
+        options: {
+          strict: true,
+        }
+      }
+    })
   ],
   controllers: [AppController],
-  providers: [AppService,{
-    provide: APP_FILTER,
-    useClass: AllExceptionsFilter,
-  }],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    }
+  ],
 })
 export class AppModule {}
